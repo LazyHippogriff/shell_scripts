@@ -1,0 +1,73 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]
+then
+        echo "Usage: ./script.sh directory_path date[optional]"
+        echo "date should be in proper format e.g. 20180506 for 6th May, 2018"
+        echo "In the absence of date, all files older than 15 days from today will be deleted in the given directory otherwise all files older than the given date will be deleted"
+        exit 1
+fi
+
+
+input_directory=$1
+echo "input_directory: $input_directory"
+
+days_in_year=365
+days_in_month=30
+backup_duration_in_days=15
+
+if [ $# -eq 2 ]
+then
+        echo "no. of parameters are 2"
+        reference_date=$2
+
+else
+        reference_date=$(date +"%Y%m%d")  # = 20130718
+fi
+
+##################### Getting reference date in proper format ###########################
+
+mod_reference_date=$(echo $reference_date|awk '{print substr($1,1,4)}')
+mod_reference_date=$((mod_reference_date * days_in_year))
+
+temp=$(echo $reference_date|awk '{print substr($1,5,2)}')
+temp=${temp#0}
+temp=$((temp*days_in_month))
+
+mod_reference_date=$((mod_reference_date+temp))
+
+if [ $# -eq 1 ]
+then
+        mod_reference_date=$((mod_reference_date+temp-backup_duration_in_days))
+fi
+
+echo "mod_reference_date: $mod_reference_date"
+
+#################### Function for getting file's last modification date in proper format ####################
+
+file_date()
+{
+        file_date=$(stat $1|awk -F': ' '/Modify: /{print $2}'|awk '{print $1}'|sed 's/-//g')    # = 20130715
+        mod_file_date=$(echo $file_date|awk '{print substr($1,1,4)}')
+        mod_file_date=$((mod_file_date * days_in_year))
+
+        temp=$(echo $file_date|awk '{print substr($1,5,2)}')
+        temp=$((temp*days_in_month))
+        temp=${temp#0}
+
+        mod_file_date=$((mod_file_date+temp))
+        temp=$(echo $file_date|awk '{print substr($1,7,2)}')
+        temp=${temp#0}
+
+        mod_file_date=$((mod_file_date+temp))
+        echo " Inside function $1: $mod_file_date"
+        if [ $mod_file_date -lt $mod_reference_date ]
+        then
+                rm -rf $2/$1
+        fi
+}
+
+for i in $( ls $input_directory);
+do
+        file_date $i $input_directory
+done
