@@ -1,2 +1,2 @@
 #The below command will find the shared libraries used by the given binary, and print their path
-for lib in `ldd bin/sampleBinary | awk '/ => / { print $3 }' `; do ls -lrta "$lib";done
+for lib in `ldd bin/sampleBinary | awk '/ => / { print $3 }' | grep -v 0x`; do ls -lrta "$lib";done
