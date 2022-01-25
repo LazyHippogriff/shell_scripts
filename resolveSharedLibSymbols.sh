@@ -1,4 +1,3 @@
-[root@mu99dc201upfxoc1j sharedLibTest]# cat resolveSharedLibSymbols.sh
 #!/bin/bash
 
 if [ "$#" -ne 1 ]
@@ -70,4 +69,4 @@ echo -e "\n" >> result.txt
 done
 
 rm -f allSymbols.temp
-[root@mu99dc201upfxoc1j sharedLibTest]#
+
